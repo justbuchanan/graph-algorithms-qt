@@ -19,8 +19,25 @@ def qt_ui_library(name, ui, deps):
       deps = deps,
   )
 
-def qt_cc_library(name, src, hdr, normal_hdrs=[], deps=None, ui=None,
-                  ui_deps=None, **kwargs):
+# Turns a .qrc file into a cc_library.
+# Note that deps must be listed explicitly because bazel doesn't allow reading
+# files at analysis time
+def qt_resource(name, qrc_file, deps):
+  outfile = name + "_gen.cpp"
+  native.genrule(
+    name = name + "_gen",
+    srcs = [qrc_file] + deps,
+    outs = [outfile],
+    cmd = "rcc --name $(OUTS) --output $(OUTS) $(location %s)" % qrc_file,
+  )
+
+  native.cc_library(
+    name = name,
+    srcs = [outfile],
+    alwayslink = 1,
+  )
+
+def qt_cc_library(name, src, hdr, normal_hdrs=[], deps=None, **kwargs):
   """Compiles a QT library and generates the MOC for it.
 
   If a UI file is provided, then it is also compiled with UIC.
@@ -35,18 +52,15 @@ def qt_cc_library(name, src, hdr, normal_hdrs=[], deps=None, ui=None,
     ui_deps: Dependencies for the UI file.
     kwargs: Any additional arguments are passed to the cc_library rule.
   """
+  header_path = '%s/%s' % (PACKAGE_NAME, hdr) if len(PACKAGE_NAME) > 0  else hdr
   native.genrule(
       name = "%s_moc" % name,
       srcs = [hdr],
       outs = ["moc_%s.cpp" % name],
       cmd =  "moc $(location %s) -o $@ -f'%s'" \
-        % (hdr, '%s/%s' % (PACKAGE_NAME, hdr)),
+        % (hdr, header_path),
   )
   srcs = [src, ":%s_moc" % name]
-
-  if ui:
-    qt_ui_library("%s_ui" % name, ui, deps=ui_deps)
-    deps.append("%s_ui" % name)
 
   hdrs = [hdr] + normal_hdrs
 
