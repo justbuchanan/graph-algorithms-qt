@@ -124,6 +124,10 @@ void GraphWidget::useRandom() {
   _solver = make_solver<RandomSolver>();
   restartRun();
 }
+void GraphWidget::incItr() {
+  setIterations(iterations() + 1);
+  Q_EMIT stepped();
+}
 
 void GraphWidget::step() {
   incItr();

@@ -23,7 +23,7 @@ public:
   Q_PROPERTY(int iterations READ iterations WRITE setIterations NOTIFY stepped)
   int iterations() const { return _iterations; }
   void setIterations(int i) { _iterations = i; }
-  void incItr() { setIterations(iterations() + 1); }
+  void incItr();
 
 Q_SIGNALS:
   void stepped();
