@@ -47,9 +47,6 @@ void copyObstacles(const StateSpace &from, StateSpace *to) {
 
 GraphWidget::GraphWidget()
     : _stateSpace(new StateSpace(100, 100)), _stepTimer(this) {
-  _startPt = State{5, 5};
-  _goalPt = State{30, 20};
-
   _solved = false;
 
   // obstacles
@@ -60,7 +57,8 @@ GraphWidget::GraphWidget()
   connect(&_stepTimer, SIGNAL(timeout()), this, SLOT(step()));
 
   // start out with A*
-  useAstar();
+  _solver = make_solver<AStarSolver>({5, 5}, {30, 20});
+  restartRun();
 
   //  register for mouse events
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -87,14 +85,13 @@ void GraphWidget::geometryChanged(const QRectF &newGeometry,
   _stateSpace.reset(newStateSpace);
 
   // move start and goal to be in bounds
-  _startPt = nearestInBounds(*newStateSpace, _startPt);
-  _goalPt = nearestInBounds(*newStateSpace, _goalPt);
+  State start = nearestInBounds(*newStateSpace, _solver->start());
+  State goal = nearestInBounds(*newStateSpace, _solver->goal());
 
   // update solver
   _solver->setStateSpace(newStateSpace);
-  _solver->setGoal(_goalPt);
-  _solver->setGoal(_startPt);
-  _solver = make_solver<AStarSolver>();
+  _solver->setStart(start);
+  _solver->setGoal(goal);
 
   restartRun();
 }
@@ -111,17 +108,17 @@ void GraphWidget::restartRun() {
 void GraphWidget::restartTimer() { _stepTimer.start(100); }
 
 void GraphWidget::useDijkstra() {
-  _solver = make_solver<DijkstraSolver>();
+  _solver = make_solver<DijkstraSolver>(_solver->start(), _solver->goal());
   restartRun();
 }
 
 void GraphWidget::useAstar() {
-  _solver = make_solver<AStarSolver>();
+  _solver = make_solver<AStarSolver>(_solver->start(), _solver->goal());
   restartRun();
 }
 
 void GraphWidget::useRandom() {
-  _solver = make_solver<RandomSolver>();
+  _solver = make_solver<RandomSolver>(_solver->start(), _solver->goal());
   restartRun();
 }
 void GraphWidget::incItr() {
@@ -159,10 +156,10 @@ void GraphWidget::paint(QPainter *painter) {
       const State st = {x, y};
       QColor c = QColor("#f1f1f1");
       bool empty = true;
-      if (st == _goalPt) {
+      if (st == _solver->goal()) {
         c = QColor("#4CAF50"); // green
         empty = false;
-      } else if (st == _startPt) {
+      } else if (st == _solver->start()) {
         c = QColor("#F44336"); // red
         empty = false;
       } else if (_stateSpace->obstacleAt(st)) {
@@ -209,9 +206,9 @@ void GraphWidget::mousePressEvent(QMouseEvent *event) {
   QPointF pos = event->pos() - QPointF(kDrawingInset, kDrawingInset);
   State state = _stateForPos(pos);
 
-  if (state == _startPt) {
+  if (state == _solver->start()) {
     _draggingItem = DraggingStart;
-  } else if (state == _goalPt) {
+  } else if (state == _solver->goal()) {
     _draggingItem = DraggingGoal;
   } else {
     _editingObstacles = true;
@@ -231,16 +228,14 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
 
   if (_draggingItem == DraggingStart) {
     //  reset the tree with the new start pos
-    if (_startPt != point) {
-      _startPt = point;
-      _solver->setStart(_startPt);
+    if (_solver->start() != point) {
+      _solver->setStart(point);
       restartRun();
     }
   } else if (_draggingItem == DraggingGoal) {
     //  set the new goal point
-    if (_goalPt != point) {
-      _goalPt = point;
-      _solver->setGoal(_goalPt);
+    if (_solver->goal() != point) {
+      _solver->setGoal(point);
       restartRun();
     }
   } else if (_editingObstacles) {

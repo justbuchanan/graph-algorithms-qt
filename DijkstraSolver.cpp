@@ -12,14 +12,14 @@ void DijkstraSolver::reset() {
   _unvisited.clear();
   _prev.clear();
 
-  _tentativeDist[start] = 0;
+  _tentativeDist[start()] = 0;
 
   //  mark all nodes unvisited
-  for (int x = 0; x < stateSpace->width(); x++) {
-    for (int y = 0; y < stateSpace->height(); y++) {
+  for (int x = 0; x < stateSpace()->width(); x++) {
+    for (int y = 0; y < stateSpace()->height(); y++) {
       State s{x, y};
 
-      if (!stateSpace->obstacleAt(s)) {
+      if (!stateSpace()->obstacleAt(s)) {
         _unvisited.insert(s);
       }
     }
@@ -41,14 +41,14 @@ void DijkstraSolver::step() {
         return tentativeDist(s1) < tentativeDist(s2);
       });
 
-  for (State neighbor : stateSpace->neighborsOf(current)) {
+  for (State neighbor : stateSpace()->neighborsOf(current)) {
     if (hasExplored(neighbor)) {
       continue;
     }
 
     // update tentative dist
     float new_dist =
-        _tentativeDist[current] + stateSpace->distBetween(current, neighbor);
+        _tentativeDist[current] + stateSpace()->distBetween(current, neighbor);
     if (new_dist < tentativeDist(neighbor)) {
 
       _tentativeDist[neighbor] = new_dist;
@@ -62,13 +62,13 @@ void DijkstraSolver::step() {
 std::vector<State> DijkstraSolver::reconstructPath() {
   std::vector<State> path;
 
-  State current = goal;
-  while (current != start) {
+  State current = goal();
+  while (current != start()) {
     path.push_back(current);
     current = _prev[current];
   }
 
-  path.push_back(start);
+  path.push_back(start());
   // TODO: reverse
 
   return path;

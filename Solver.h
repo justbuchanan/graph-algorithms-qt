@@ -5,7 +5,7 @@
 class Solver {
 public:
   Solver(const StateSpace *ss, State start, State goal)
-      : stateSpace(ss), start(start), goal(goal) {}
+      : _stateSpace(ss), _start(start), _goal(goal) {}
 
   virtual void step() = 0;
   virtual std::vector<State> reconstructPath() = 0;
@@ -14,23 +14,28 @@ public:
   virtual void reset() = 0;
 
   virtual void setStateSpace(const StateSpace *ss) {
-    stateSpace = ss;
+    _stateSpace = ss;
     reset();
   }
 
+  const StateSpace *stateSpace() const { return _stateSpace; }
+
   virtual void setStart(State s) {
-    start = s;
+    _start = s;
     reset();
   }
 
   virtual void setGoal(State g) {
-    goal = g;
+    _goal = g;
     reset();
   }
 
-  bool done() const { return hasExplored(goal); }
+  State goal() const { return _goal; }
+  State start() const { return _start; }
+
+  bool done() const { return hasExplored(goal()); }
 
 protected:
-  const StateSpace *stateSpace;
-  State start, goal;
+  const StateSpace *_stateSpace;
+  State _start, _goal;
 };

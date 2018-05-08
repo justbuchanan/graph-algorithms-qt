@@ -45,8 +45,9 @@ protected:
   State _stateForPos(QPointF qp);
 
 private:
-  template <class T> std::unique_ptr<T> make_solver() const {
-    return std::unique_ptr<T>(new T(_stateSpace.get(), _startPt, _goalPt));
+  template <class T>
+  std::unique_ptr<T> make_solver(State start, State goal) const {
+    return std::unique_ptr<T>(new T(_stateSpace.get(), start, goal));
   }
 
   // if you click down on an obstacle, you enter erase mode.
@@ -61,7 +62,6 @@ private:
 
   std::unique_ptr<StateSpace> _stateSpace;
   std::unique_ptr<Solver> _solver;
-  State _startPt, _goalPt;
   QTimer _stepTimer;
   int _iterations = 0;
 

@@ -39,8 +39,8 @@ void AStarSolver::step() {
                                 if (std::abs(f1 - f2) < 0.0001) {
                                   // tie breaker: choose the node closest to the
                                   // goal
-                                  return heuristic_cost_estimate(s1, goal) <
-                                         heuristic_cost_estimate(s2, goal);
+                                  return heuristic_cost_estimate(s1, goal()) <
+                                         heuristic_cost_estimate(s2, goal());
                                 } else {
                                   return f1 < f2;
                                 }
@@ -49,12 +49,12 @@ void AStarSolver::step() {
   _openSet.erase(c);
   _closedSet.insert(c);
 
-  if (c == goal) {
+  if (c == goal()) {
     std::cout << "Done!" << std::endl;
     return;
   }
 
-  for (auto neighbor : stateSpace->neighborsOf(c)) {
+  for (auto neighbor : stateSpace()->neighborsOf(c)) {
     if (_closedSet.find(neighbor) != _closedSet.end()) {
       continue; // this neighbor already evaluated
     }
@@ -62,7 +62,7 @@ void AStarSolver::step() {
     // add to open set if not in already
     _openSet.insert(neighbor);
 
-    float tentative_gScore = gScore(c) + stateSpace->distBetween(c, neighbor);
+    float tentative_gScore = gScore(c) + stateSpace()->distBetween(c, neighbor);
 
     if (tentative_gScore >= gScore(neighbor)) {
       // this is not a better path
@@ -72,14 +72,14 @@ void AStarSolver::step() {
     _cameFrom[neighbor] = c;
     _gScore[neighbor] = tentative_gScore;
     _fScore[neighbor] =
-        tentative_gScore + heuristic_cost_estimate(neighbor, goal);
+        tentative_gScore + heuristic_cost_estimate(neighbor, goal());
   }
 }
 
 std::vector<State> AStarSolver::reconstructPath() {
   std::vector<State> path;
 
-  State current = goal;
+  State current = goal();
 
   path.push_back(current);
 
@@ -117,7 +117,7 @@ void AStarSolver::reset() {
   _fScore.clear();
   _gScore.clear();
 
-  _openSet.insert(start);
-  _gScore[start] = 0;
-  _fScore[start] = heuristic_cost_estimate(start, goal);
+  _openSet.insert(start());
+  _gScore[start()] = 0;
+  _fScore[start()] = heuristic_cost_estimate(start(), goal());
 }

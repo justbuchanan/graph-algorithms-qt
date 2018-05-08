@@ -11,7 +11,7 @@ RandomSolver::RandomSolver(const StateSpace *ss, State start, State goal)
 void RandomSolver::step() {
   const State s = _explored[rand() % _explored.size()];
 
-  auto neighbors = stateSpace->neighborsOf(s);
+  auto neighbors = stateSpace()->neighborsOf(s);
   State neighbor = neighbors[rand() % neighbors.size()];
 
   if (!hasExplored(neighbor)) {
@@ -25,5 +25,5 @@ bool RandomSolver::hasExplored(State s) const {
 
 void RandomSolver::reset() {
   _explored.clear();
-  _explored.push_back(start);
+  _explored.push_back(start());
 }
