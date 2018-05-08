@@ -4,6 +4,13 @@
 
 DijkstraSolver::DijkstraSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
+  reset();
+}
+
+void DijkstraSolver::reset() {
+  _tentativeDist.clear();
+  _unvisited.clear();
+  _prev.clear();
 
   _tentativeDist[start] = 0;
 
@@ -42,10 +49,29 @@ void DijkstraSolver::step() {
     // update tentative dist
     float new_dist =
         _tentativeDist[current] + stateSpace->distBetween(current, neighbor);
-    _tentativeDist[neighbor] = std::min(tentativeDist(neighbor), new_dist);
+    if (new_dist < tentativeDist(neighbor)) {
+
+      _tentativeDist[neighbor] = new_dist;
+      _prev[neighbor] = current;
+    }
   }
 
   _unvisited.erase(current);
+}
+
+std::vector<State> DijkstraSolver::reconstructPath() {
+  std::vector<State> path;
+
+  State current = goal;
+  while (current != start) {
+    path.push_back(current);
+    current = _prev[current];
+  }
+
+  path.push_back(start);
+  // TODO: reverse
+
+  return path;
 }
 
 bool DijkstraSolver::hasExplored(State s) const {

@@ -9,12 +9,11 @@
 
 using namespace std;
 
-// TODO: reconcile these with fixed dimensions set in .qml file
-static const int kWidth = 100;
-static const int kHeight = 100;
-static const float kScale = 20;
+static const float kSquareSize = 20;
+static const float kDrawingInset = kSquareSize / 2;
 
 namespace {
+
 void blockLine(StateSpace *ss, State start, State dt, int t) {
   for (int _t = 0; _t < t; _t++) {
     State s{start.x + _t * dt.x, start.y + _t * dt.y};
@@ -23,18 +22,42 @@ void blockLine(StateSpace *ss, State start, State dt, int t) {
     }
   }
 }
+
+State nearestInBounds(const StateSpace &ss, State pt) {
+  if (ss.inBounds(pt)) {
+    return pt;
+  }
+
+  pt.x = std::min(pt.x, ss.width() - 1);
+  pt.y = std::min(pt.y, ss.height() - 1);
+
+  return pt;
+}
+
+void copyObstacles(const StateSpace &from, StateSpace *to) {
+  for (int x = 0; x < std::min(from.width(), to->width()); x++) {
+    for (int y = 0; y < std::min(from.height(), to->height()); y++) {
+      State s{x, y};
+      to->obstacleAt(s) = from.obstacleAt(s);
+    }
+  }
+}
+
 } // namespace
 
-GraphWidget::GraphWidget() : _stateSpace(kWidth, kHeight), _stepTimer(this) {
+GraphWidget::GraphWidget()
+    : _stateSpace(new StateSpace(100, 100)), _stepTimer(this) {
   _startPt = State{5, 5};
   _goalPt = State{30, 20};
 
+  _solved = false;
+
   // obstacles
-  blockLine(&_stateSpace, State{12, 15}, State{1, 0}, 30);
-  blockLine(&_stateSpace, State{60, 20}, State{0, 1}, 30);
+  blockLine(_stateSpace.get(), State{12, 15}, State{1, 0}, 30);
+  blockLine(_stateSpace.get(), State{60, 20}, State{0, 1}, 30);
 
   // timer to step the algorithm
-  connect(&_stepTimer, SIGNAL(timeout()), this, SLOT(tickTock()));
+  connect(&_stepTimer, SIGNAL(timeout()), this, SLOT(step()));
 
   // start out with A*
   useAstar();
@@ -45,8 +68,42 @@ GraphWidget::GraphWidget() : _stateSpace(kWidth, kHeight), _stepTimer(this) {
   _editingObstacles = false;
 }
 
+void GraphWidget::geometryChanged(const QRectF &newGeometry,
+                                  const QRectF &oldGeometry) {
+
+  if (newGeometry.width() < 0.0001 || newGeometry.height() < 0.0001) {
+    // skip invalid geometry - happens when app is first launching
+    return;
+  }
+
+  cout << "Resized" << endl;
+  cout << newGeometry.width() << endl;
+
+  int w = floor((newGeometry.width() - kDrawingInset * 2) / kSquareSize);
+  int h = floor((newGeometry.height() - kDrawingInset * 2) / kSquareSize);
+
+  StateSpace *newStateSpace = new StateSpace(w, h);
+  copyObstacles(*_stateSpace, newStateSpace);
+  _stateSpace.reset(newStateSpace);
+
+  // move start and goal to be in bounds
+  _startPt = nearestInBounds(*newStateSpace, _startPt);
+  _goalPt = nearestInBounds(*newStateSpace, _goalPt);
+
+  // update solver
+  _solver->setStateSpace(newStateSpace);
+  _solver->setGoal(_goalPt);
+  _solver->setGoal(_startPt);
+  _solver = make_solver<AStarSolver>();
+
+  restartRun();
+}
+
 void GraphWidget::restartRun() {
+  _solutionPath.clear();
+  _solved = false;
   setIterations(0);
+  _solver->reset();
   Q_EMIT stepped();
   restartTimer();
 }
@@ -55,84 +112,109 @@ void GraphWidget::restartTimer() { _stepTimer.start(100); }
 
 void GraphWidget::useDijkstra() {
   _solver = make_solver<DijkstraSolver>();
-  restartTimer();
+  restartRun();
 }
 
 void GraphWidget::useAstar() {
   _solver = make_solver<AStarSolver>();
-  restartTimer();
+  restartRun();
 }
 
 void GraphWidget::useRandom() {
   _solver = make_solver<RandomSolver>();
-  restartTimer();
+  restartRun();
 }
 
-void GraphWidget::tickTock() {
+void GraphWidget::step() {
   incItr();
   cout << "itr: " << _iterations << endl;
   if (_solver->done()) {
     cout << "Done!" << endl;
+    _solutionPath = _solver->reconstructPath();
+    _solved = true;
     _stepTimer.stop();
-    return;
+  } else {
+    _solver->step();
   }
-
-  // cout << "tick tock" << endl;
-  _solver->step();
 
   update();
 }
 
+const QColor kBackgroundColor = Qt::white;
+
 void GraphWidget::paint(QPainter *painter) {
   painter->setRenderHint(QPainter::Antialiasing);
 
-  for (int x = 0; x < _stateSpace.width(); x++) {
-    for (int y = 0; y < _stateSpace.height(); y++) {
+  // background white
+  painter->setBrush(kBackgroundColor);
+  painter->drawRect(QRectF{0, 0, width(), height()});
+
+  painter->translate(QPointF{kDrawingInset, kDrawingInset});
+  for (int x = 0; x < _stateSpace->width(); x++) {
+    for (int y = 0; y < _stateSpace->height(); y++) {
       const State st = {x, y};
-      QColor c = QColor("white");
+      QColor c = QColor("#f1f1f1");
+      bool empty = true;
       if (st == _goalPt) {
-        c = QColor("green");
+        c = QColor("#4CAF50"); // green
+        empty = false;
       } else if (st == _startPt) {
-        c = QColor("blue");
-      } else if (_stateSpace.obstacleAt(st)) {
-        c = QColor("black");
+        c = QColor("#F44336"); // red
+        empty = false;
+      } else if (_stateSpace->obstacleAt(st)) {
+        c = QColor(Qt::black);
+        empty = false;
+      } else if (_solved &&
+                 std::find(_solutionPath.begin(), _solutionPath.end(), st) !=
+                     _solutionPath.end()) {
+        c = QColor("#2196F3"); // blue
+        empty = false;
       } else if (_solver->hasExplored(st)) {
-        c = QColor("yellow");
+        c = QColor("#FFEB3B"); // yellow
+        empty = false;
       }
 
-      painter->setBrush(c);
+      const QPointF center =
+          QPointF((x + 0.5) * kSquareSize, (y + 0.5) * kSquareSize);
 
-      // black outline around each square
-      QPen pen(QColor("black"));
-      pen.setWidth(1);
-      painter->setPen(pen);
+      if (empty) {
+        painter->setBrush(Qt::black);
 
-      painter->drawRect(QRectF(x * kScale, y * kScale, kScale, kScale));
+        QPen pen(Qt::black);
+        pen.setWidth(1);
+        painter->setPen(pen);
+
+        painter->drawEllipse(center, 1, 1);
+        continue;
+      } else {
+        painter->setBrush(c);
+        painter->setPen(c);
+
+        float rad = kSquareSize / 2.5;
+        painter->drawEllipse(center, rad, rad);
+      }
     }
   }
 }
 
-bool GraphWidget::_mouseInGrabbingRange(QMouseEvent *event, State pt) {
-  return _stateForPos(event->pos()) == pt;
-}
-
 State GraphWidget::_stateForPos(QPointF qp) {
-  return State{(int)(qp.x() / kScale), (int)(qp.y() / kScale)};
+  return State{(int)(qp.x() / kSquareSize), (int)(qp.y() / kSquareSize)};
 }
 
 void GraphWidget::mousePressEvent(QMouseEvent *event) {
-  if (_mouseInGrabbingRange(event, _startPt)) {
+  QPointF pos = event->pos() - QPointF(kDrawingInset, kDrawingInset);
+  State state = _stateForPos(pos);
+
+  if (state == _startPt) {
     _draggingItem = DraggingStart;
-  } else if (_mouseInGrabbingRange(event, _goalPt)) {
+  } else if (state == _goalPt) {
     _draggingItem = DraggingGoal;
   } else {
     _editingObstacles = true;
-    QPointF pos = {(qreal)event->pos().x(), (qreal)event->pos().y()};
-    State s = _stateForPos(pos);
-    _erasingObstacles = _stateSpace.obstacleAt(s);
+    _erasingObstacles = _stateSpace->obstacleAt(state);
 
     //  toggle the obstacle state of clicked square
-    _stateSpace.obstacleAt(s) = !_erasingObstacles;
+    _stateSpace->obstacleAt(state) = !_erasingObstacles;
     update();
   }
 
@@ -140,19 +222,30 @@ void GraphWidget::mousePressEvent(QMouseEvent *event) {
 }
 
 void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
-  const State point = _stateForPos(event->pos());
+  const State point =
+      _stateForPos(event->pos() - QPointF(kDrawingInset, kDrawingInset));
 
   if (_draggingItem == DraggingStart) {
     //  reset the tree with the new start pos
-    _startPt = point;
+    if (_startPt != point) {
+      _startPt = point;
+      _solver->setStart(_startPt);
+      restartRun();
+    }
   } else if (_draggingItem == DraggingGoal) {
     //  set the new goal point
-    _goalPt = point;
+    if (_goalPt != point) {
+      _goalPt = point;
+      _solver->setGoal(_goalPt);
+      restartRun();
+    }
   } else if (_editingObstacles) {
-    if (point.y >= 0 && point.y < kHeight && point.x >= 0 && point.x < kWidth) {
-      _stateSpace.setBlocked(point, !_erasingObstacles);
+    if (_stateSpace->inBounds(point)) {
+      _stateSpace->setBlocked(point, !_erasingObstacles);
     }
   }
+
+  _stepTimer.stop(); // stay paused
 
   if (_draggingItem != DraggingNone || _editingObstacles)
     update();

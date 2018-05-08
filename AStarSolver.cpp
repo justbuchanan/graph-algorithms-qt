@@ -5,9 +5,7 @@
 
 AStarSolver::AStarSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
-  _openSet.insert(start);
-  _gScore[start] = 0;
-  _fScore[start] = heuristic_cost_estimate(start, goal);
+  reset();
 }
 
 float AStarSolver::fScore(State s) {
@@ -33,9 +31,20 @@ void AStarSolver::step() {
   }
 
   // find item in openSet with lowest f score
-  State c = *std::min_element(
-      _openSet.begin(), _openSet.end(),
-      [this](State s1, State s2) { return fScore(s1) < fScore(s2); });
+  State c = *std::min_element(_openSet.begin(), _openSet.end(),
+                              [this](State s1, State s2) {
+                                float f1 = fScore(s1);
+                                float f2 = fScore(s2);
+
+                                if (std::abs(f1 - f2) < 0.0001) {
+                                  // tie breaker: choose the node closest to the
+                                  // goal
+                                  return heuristic_cost_estimate(s1, goal) <
+                                         heuristic_cost_estimate(s2, goal);
+                                } else {
+                                  return f1 < f2;
+                                }
+                              });
 
   _openSet.erase(c);
   _closedSet.insert(c);
@@ -51,9 +60,7 @@ void AStarSolver::step() {
     }
 
     // add to open set if not in already
-    if (_openSet.find(neighbor) == _openSet.end()) {
-      _openSet.insert(neighbor);
-    }
+    _openSet.insert(neighbor);
 
     float tentative_gScore = gScore(c) + stateSpace->distBetween(c, neighbor);
 
@@ -65,15 +72,52 @@ void AStarSolver::step() {
     _cameFrom[neighbor] = c;
     _gScore[neighbor] = tentative_gScore;
     _fScore[neighbor] =
-        gScore(neighbor) + heuristic_cost_estimate(neighbor, goal);
+        tentative_gScore + heuristic_cost_estimate(neighbor, goal);
   }
 }
 
+std::vector<State> AStarSolver::reconstructPath() {
+  std::vector<State> path;
+
+  State current = goal;
+
+  path.push_back(current);
+
+  while (_cameFrom.find(current) != _cameFrom.end()) {
+    current = _cameFrom[current];
+    path.push_back(current);
+  }
+
+  // path.reverse(); TODO
+
+  return path;
+}
+
 float AStarSolver::heuristic_cost_estimate(State a, State b) {
-  return abs(a.x - b.x) + abs(a.y - b.y);
+  // return abs(a.x - b.x) + abs(a.y - b.y);
   // return stateSpace->distBetween(a, b);
+
+  int dx = std::abs(a.x - b.x);
+  int dy = std::abs(a.y - b.y);
+
+  int diag = std::min(dx, dy);
+  int straight = dx + dy - 2 * diag;
+
+  return straight * 1 + diag * sqrtf(2.0);
 }
 
 bool AStarSolver::hasExplored(State s) const {
   return std::find(_closedSet.begin(), _closedSet.end(), s) != _closedSet.end();
+}
+
+void AStarSolver::reset() {
+  _openSet.clear();
+  _closedSet.clear();
+  _cameFrom.clear();
+  _fScore.clear();
+  _gScore.clear();
+
+  _openSet.insert(start);
+  _gScore[start] = 0;
+  _fScore[start] = heuristic_cost_estimate(start, goal);
 }

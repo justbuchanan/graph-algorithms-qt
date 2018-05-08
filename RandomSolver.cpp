@@ -5,7 +5,7 @@
 
 RandomSolver::RandomSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
-  _explored.push_back(start);
+  reset();
 }
 
 void RandomSolver::step() {
@@ -21,4 +21,9 @@ void RandomSolver::step() {
 
 bool RandomSolver::hasExplored(State s) const {
   return std::find(_explored.begin(), _explored.end(), s) != _explored.end();
+}
+
+void RandomSolver::reset() {
+  _explored.clear();
+  _explored.push_back(start);
 }

@@ -37,15 +37,19 @@ ApplicationWindow {
             }
         }
 
-        // draw graph
-        GraphWidget {
-            // Fixed size
-            Layout.maximumHeight: 600
-            Layout.maximumWidth: 800
+        Row{
             Layout.minimumHeight: 600
             Layout.minimumWidth: 800
+            anchors.right: parent.right
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
 
-            id: graphWidget
+            // draw graph
+            GraphWidget {
+                anchors.fill: parent
+
+                id: graphWidget
+            }
         }
     }
 

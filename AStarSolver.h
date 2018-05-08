@@ -9,7 +9,9 @@ public:
   AStarSolver(const StateSpace *ss, State start, State goal);
 
   void step() override;
+  std::vector<State> reconstructPath() override;
   bool hasExplored(State s) const override;
+  void reset() override;
 
 protected:
   float fScore(State s);

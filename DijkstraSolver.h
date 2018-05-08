@@ -9,7 +9,9 @@ public:
   DijkstraSolver(const StateSpace *ss, State start, State goal);
 
   void step() override;
+  std::vector<State> reconstructPath() override;
   bool hasExplored(State s) const override;
+  void reset() override;
 
 protected:
   float tentativeDist(State s) const;
@@ -17,4 +19,5 @@ protected:
 private:
   std::set<State> _unvisited;
   std::map<State, float> _tentativeDist;
+  std::map<State, State> _prev;
 };

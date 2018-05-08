@@ -7,7 +7,12 @@ public:
   RandomSolver(const StateSpace *ss, State start, State goal);
 
   void step() override;
+  std::vector<State> reconstructPath() override {
+    // unimplemented
+    return {};
+  }
   bool hasExplored(State s) const override;
+  void reset() override;
 
 private:
   std::vector<State> _explored;
