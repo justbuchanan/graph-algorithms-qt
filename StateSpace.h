@@ -31,7 +31,7 @@ public:
   int height() const { return _h; }
 
   bool inBounds(State s) const {
-    return s.x > 0 && s.x < _w && s.y > 0 && s.y < _h;
+    return s.x >= 0 && s.x < _w && s.y >= 0 && s.y < _h;
   }
 
   // Returns all neighbors that are in bounds and not blocked by obstacles.
