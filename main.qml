@@ -61,4 +61,9 @@ ApplicationWindow {
             }
         }
     }
+
+    // keyboard shortcuts
+    Shortcut { sequence: 'a'; onActivated: graphWidget.useAstar() }
+    Shortcut { sequence: 'd'; onActivated: graphWidget.useDijkstra() }
+    Shortcut { sequence: 'r'; onActivated: graphWidget.useRandom() }
 }
