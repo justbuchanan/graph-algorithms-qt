@@ -5,7 +5,6 @@
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 #include <QtQuick/QQuickPaintedItem>
-#include <QtWidgets/QWidget>
 #include <memory>
 
 class GraphWidget : public QQuickPaintedItem {

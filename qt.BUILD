@@ -1,4 +1,4 @@
-package(default_visibility=["//visibility:public"])
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "qt_core",
@@ -14,7 +14,7 @@ cc_library(
     hdrs = glob(["QtNetwork/**"]),
     includes = ["."],
     linkopts = [
-    "-lQt5Network",
+        "-lQt5Network",
     ],
 )
 
@@ -22,10 +22,10 @@ cc_library(
     name = "qt_widgets",
     hdrs = glob(["QtWidgets/**"]),
     includes = ["."],
-    deps = [":qt_core"],
     linkopts = [
         "-lQt5Widgets",
     ],
+    deps = [":qt_core"],
 )
 
 cc_library(
@@ -34,7 +34,10 @@ cc_library(
     includes = ["."],
     linkopts = [
         "-lQt5Quick",
-    ]
+    ],
+    deps = [
+        "@qt//:qt_gui",
+    ],
 )
 
 cc_library(
@@ -44,15 +47,18 @@ cc_library(
     linkopts = [
         "-lQt5Qml",
     ],
-    deps = [":qt_core", ":qt_network"],
+    deps = [
+        ":qt_core",
+        ":qt_network",
+    ],
 )
 
 cc_library(
     name = "qt_gui",
     hdrs = glob(["QtGui/**"]),
     includes = ["."],
-    deps = [":qt_core"],
     linkopts = [
         "-lQt5Gui",
     ],
+    deps = [":qt_core"],
 )

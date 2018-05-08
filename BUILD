@@ -31,11 +31,8 @@ qt_cc_library(
         ":DijkstraSolver",
         ":RandomSolver",
         ":StateSpace",
-        "@qt//:qt_core",
-        "@qt//:qt_gui",
         "@qt//:qt_qml",
         "@qt//:qt_quick",
-        "@qt//:qt_widgets",
     ],
 )
 
