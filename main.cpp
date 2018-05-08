@@ -1,9 +1,9 @@
 #include "GraphWidget.h"
+#include <QtQml/QQmlApplicationEngine>
+#include <QtQuick/QQuickView>
+#include <QtQuick/QtQuick>
+#include <QtWidgets/QApplication>
 #include <iostream>
-#include <qt/QtQml/QQmlApplicationEngine>
-#include <qt/QtQuick/QQuickView>
-#include <qt/QtQuick/QtQuick>
-#include <qt/QtWidgets/QApplication>
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);

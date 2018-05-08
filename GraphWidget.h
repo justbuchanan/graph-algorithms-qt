@@ -2,11 +2,11 @@
 
 #include "Solver.h"
 #include "StateSpace.h"
+#include <QtCore/QObject>
+#include <QtCore/QTimer>
+#include <QtQuick/QQuickPaintedItem>
+#include <QtWidgets/QWidget>
 #include <memory>
-#include <qt/QtCore/QObject>
-#include <qt/QtCore/QTimer>
-#include <qt/QtQuick/QQuickPaintedItem>
-#include <qt/QtWidgets/QWidget>
 
 class GraphWidget : public QQuickPaintedItem {
   Q_OBJECT

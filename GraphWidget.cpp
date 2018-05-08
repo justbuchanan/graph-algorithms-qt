@@ -3,10 +3,10 @@
 #include "AStarSolver.h"
 #include "DijkstraSolver.h"
 #include "RandomSolver.h"
+#include <QtGui/QPainter>
+#include <QtWidgets/QLayout>
 #include <cmath>
 #include <iostream>
-#include <qt/QtGui/QPainter>
-#include <qt/QtWidgets/QLayout>
 
 using namespace std;
 
