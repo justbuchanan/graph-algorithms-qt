@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.6
 import QtQuick.Window 2.1
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.2
@@ -16,6 +16,9 @@ ApplicationWindow {
 
         // main toolbar
         Row{
+            padding: 5
+            spacing: 5
+
             Layout.alignment: Qt.AlignTop
 
             Button {

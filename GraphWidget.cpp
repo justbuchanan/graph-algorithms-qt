@@ -12,25 +12,24 @@ using namespace std;
 // TODO: reconcile these with fixed dimensions set in .qml file
 static const int kWidth = 100;
 static const int kHeight = 100;
-static const float kScale = 10;
+static const float kScale = 20;
 
 namespace {
 void blockLine(StateSpace *ss, State start, State dt, int t) {
   for (int _t = 0; _t < t; _t++) {
-    ss->obstacleAt(State{start.x + _t * dt.x, start.y + _t * dt.y}) = true;
+    State s{start.x + _t * dt.x, start.y + _t * dt.y};
+    if (ss->inBounds(s)) {
+      ss->obstacleAt(s) = true;
+    }
   }
 }
 } // namespace
 
 GraphWidget::GraphWidget() : _stateSpace(kWidth, kHeight), _stepTimer(this) {
-  // setFixedSize(kWidth * kScale, kHeight * kScale);
-
   _startPt = State{5, 5};
-  _goalPt = State{70, 35};
+  _goalPt = State{30, 20};
 
   // obstacles
-  _stateSpace.setBlocked(State{2, 20});
-  blockLine(&_stateSpace, State{0, 4}, {1, 0}, 4);
   blockLine(&_stateSpace, State{12, 15}, State{1, 0}, 30);
   blockLine(&_stateSpace, State{60, 20}, State{0, 1}, 30);
 
@@ -85,12 +84,11 @@ void GraphWidget::tickTock() {
 }
 
 void GraphWidget::paint(QPainter *painter) {
-  // painter.setRenderHint(QPainter::Antialiasing);
+  painter->setRenderHint(QPainter::Antialiasing);
 
   for (int x = 0; x < _stateSpace.width(); x++) {
     for (int y = 0; y < _stateSpace.height(); y++) {
       const State st = {x, y};
-      // bool empty = false;
       QColor c = QColor("white");
       if (st == _goalPt) {
         c = QColor("green");
@@ -103,17 +101,19 @@ void GraphWidget::paint(QPainter *painter) {
       }
 
       painter->setBrush(c);
-      painter->setPen(c);
+
+      // black outline around each square
+      QPen pen(QColor("black"));
+      pen.setWidth(1);
+      painter->setPen(pen);
 
       painter->drawRect(QRectF(x * kScale, y * kScale, kScale, kScale));
     }
   }
 }
 
-bool GraphWidget::mouseInGrabbingRange(QMouseEvent *event, State pt) {
-  double dx = event->pos().x() / kScale - pt.x;
-  double dy = event->pos().y() / kScale - pt.y;
-  return sqrtf(dx * dx + dy * dy) < 2;
+bool GraphWidget::_mouseInGrabbingRange(QMouseEvent *event, State pt) {
+  return _stateForPos(event->pos()) == pt;
 }
 
 State GraphWidget::_stateForPos(QPointF qp) {
@@ -121,9 +121,9 @@ State GraphWidget::_stateForPos(QPointF qp) {
 }
 
 void GraphWidget::mousePressEvent(QMouseEvent *event) {
-  if (mouseInGrabbingRange(event, _startPt)) {
+  if (_mouseInGrabbingRange(event, _startPt)) {
     _draggingItem = DraggingStart;
-  } else if (mouseInGrabbingRange(event, _goalPt)) {
+  } else if (_mouseInGrabbingRange(event, _goalPt)) {
     _draggingItem = DraggingGoal;
   } else {
     _editingObstacles = true;

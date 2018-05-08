@@ -40,8 +40,7 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event);
 
   State _stateForPos(QPointF qp);
-
-  static bool mouseInGrabbingRange(QMouseEvent *event, State s);
+  bool _mouseInGrabbingRange(QMouseEvent *event, State s);
 
 private:
   template <class T> std::unique_ptr<T> make_solver() const {
