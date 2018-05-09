@@ -52,12 +52,13 @@ protected:
 private:
   // if you click down on an obstacle, you enter erase mode.
   // if you click down where there's no obstacle, you enter draw mode.
-  bool _editingObstacles, _erasingObstacles;
+  bool _erasingObstacles;
 
   enum {
     DraggingNone = 0,
     DraggingStart,
     DraggingGoal,
+    DraggingObstacles,
   } _draggingItem;
 
   std::unique_ptr<StateSpace> _stateSpace;

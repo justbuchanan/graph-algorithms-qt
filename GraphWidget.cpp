@@ -78,7 +78,6 @@ GraphWidget::GraphWidget()
   //  register for mouse events
   setAcceptedMouseButtons(Qt::LeftButton);
   _draggingItem = DraggingNone;
-  _editingObstacles = false;
 
   _solved = false;
 
@@ -245,7 +244,10 @@ void GraphWidget::mousePressEvent(QMouseEvent *event) {
   } else if (state == _solver->goal) {
     _draggingItem = DraggingGoal;
   } else {
-    _editingObstacles = true;
+    _draggingItem = DraggingObstacles;
+
+    // If the user clicked on an obstacle, enter erase mode. Otherwise add
+    // obstacles.
     _erasingObstacles = _stateSpace->obstacleAt(state);
 
     //  toggle the obstacle state of clicked square
@@ -270,7 +272,7 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
     if (_solver->goal != point) {
       _useNamedSolver(_currentSolverName, _solver->start, point);
     }
-  } else if (_editingObstacles) {
+  } else if (_draggingItem == DraggingObstacles) {
     if (_stateSpace->inBounds(point)) {
       _stateSpace->setBlocked(point, !_erasingObstacles);
     }
@@ -278,13 +280,13 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
 
   _stepTimer.stop(); // stay paused
 
-  if (_draggingItem != DraggingNone || _editingObstacles)
+  if (_draggingItem != DraggingNone) {
     update();
+  }
 }
 
 void GraphWidget::mouseReleaseEvent(QMouseEvent *event) {
   _draggingItem = DraggingNone;
-  _editingObstacles = false;
 
   restartTimer();
 }
