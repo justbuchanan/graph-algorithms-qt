@@ -17,7 +17,7 @@ protected:
   float fScore(State s);
   float gScore(State s);
 
-  float heuristic_cost_estimate(State a, State b);
+  float _heuristicCostEstimate(State a, State b);
 
 private:
   std::set<State> _closedSet;

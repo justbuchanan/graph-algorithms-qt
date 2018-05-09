@@ -105,7 +105,7 @@ void GraphWidget::restartRun() {
   restartTimer();
 }
 
-void GraphWidget::restartTimer() { _stepTimer.start(100); }
+void GraphWidget::restartTimer() { _stepTimer.start(10); }
 
 void GraphWidget::useDijkstra() {
   _solver = make_solver<DijkstraSolver>(_solver->start(), _solver->goal());
@@ -128,7 +128,6 @@ void GraphWidget::incItr() {
 
 void GraphWidget::step() {
   incItr();
-  cout << "itr: " << _iterations << endl;
   if (_solver->done()) {
     cout << "Done!" << endl;
     _solutionPath = _solver->reconstructPath();

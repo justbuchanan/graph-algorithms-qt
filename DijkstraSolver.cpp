@@ -48,7 +48,7 @@ void DijkstraSolver::step() {
 
     // update tentative dist
     float new_dist =
-        _tentativeDist[current] + stateSpace()->distBetween(current, neighbor);
+        _tentativeDist[current] + stateSpace()->distance(current, neighbor);
     if (new_dist < tentativeDist(neighbor)) {
 
       _tentativeDist[neighbor] = new_dist;

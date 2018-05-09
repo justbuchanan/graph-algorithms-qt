@@ -31,10 +31,10 @@ ApplicationWindow {
                 onClicked: graphWidget.useAstar()
             }
 
-            Button {
-                text: "Random"
-                onClicked: graphWidget.useRandom()
-            }
+            // Button {
+            //     text: "Random"
+            //     onClicked: graphWidget.useRandom()
+            // }
         }
 
         Row{

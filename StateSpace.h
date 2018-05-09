@@ -37,7 +37,7 @@ public:
   // Returns all neighbors that are in bounds and not blocked by obstacles.
   std::vector<State> neighborsOf(State s) const;
 
-  float distBetween(State a, State b) const {
+  float distance(State a, State b) const {
     return sqrtf(powf(a.x - b.x, 2) + powf(a.y - b.y, 2));
   }
 

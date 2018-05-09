@@ -39,8 +39,8 @@ void AStarSolver::step() {
                                 if (std::abs(f1 - f2) < 0.0001) {
                                   // tie breaker: choose the node closest to the
                                   // goal
-                                  return heuristic_cost_estimate(s1, goal()) <
-                                         heuristic_cost_estimate(s2, goal());
+                                  return _heuristicCostEstimate(s1, goal()) <
+                                         _heuristicCostEstimate(s2, goal());
                                 } else {
                                   return f1 < f2;
                                 }
@@ -62,7 +62,7 @@ void AStarSolver::step() {
     // add to open set if not in already
     _openSet.insert(neighbor);
 
-    float tentative_gScore = gScore(c) + stateSpace()->distBetween(c, neighbor);
+    float tentative_gScore = gScore(c) + stateSpace()->distance(c, neighbor);
 
     if (tentative_gScore >= gScore(neighbor)) {
       // this is not a better path
@@ -72,7 +72,7 @@ void AStarSolver::step() {
     _cameFrom[neighbor] = c;
     _gScore[neighbor] = tentative_gScore;
     _fScore[neighbor] =
-        tentative_gScore + heuristic_cost_estimate(neighbor, goal());
+        tentative_gScore + _heuristicCostEstimate(neighbor, goal());
   }
 }
 
@@ -93,9 +93,9 @@ std::vector<State> AStarSolver::reconstructPath() {
   return path;
 }
 
-float AStarSolver::heuristic_cost_estimate(State a, State b) {
+float AStarSolver::_heuristicCostEstimate(State a, State b) {
   // return abs(a.x - b.x) + abs(a.y - b.y);
-  // return stateSpace->distBetween(a, b);
+  // return stateSpace->distance(a, b);
 
   int dx = std::abs(a.x - b.x);
   int dy = std::abs(a.y - b.y);
@@ -119,5 +119,5 @@ void AStarSolver::reset() {
 
   _openSet.insert(start());
   _gScore[start()] = 0;
-  _fScore[start()] = heuristic_cost_estimate(start(), goal());
+  _fScore[start()] = _heuristicCostEstimate(start(), goal());
 }
