@@ -35,6 +35,19 @@ ApplicationWindow {
             //     text: "Random"
             //     onClicked: graphWidget.useRandom()
             // }
+
+            Button {
+                text: "Clear Obstacles"
+                onClicked: graphWidget.clearObstacles()
+
+                // red background color
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: 1
+                    color: "red"
+                    opacity : .5
+                }
+            }
         }
 
         Row{
@@ -70,4 +83,6 @@ ApplicationWindow {
     Shortcut { sequence: 'a'; onActivated: graphWidget.useAstar() }
     Shortcut { sequence: 'd'; onActivated: graphWidget.useDijkstra() }
     Shortcut { sequence: 'r'; onActivated: graphWidget.useRandom() }
+
+    Shortcut { sequence: 'c'; onActivated: graphWidget.clearObstacles() }
 }

@@ -6,16 +6,12 @@
 
 struct State {
   int x, y;
-
-  bool operator==(const State &other) const {
-    return x == other.x && y == other.y;
-  }
-
-  bool operator!=(const State &other) const { return !(*this == other); }
 };
 
 std::ostream &operator<<(std::ostream &os, const State &s);
 bool operator<(const State &a, const State &b);
+bool operator==(const State &a, const State &b);
+bool operator!=(const State &a, const State &b);
 
 // Maintains obstacles in a 2d discrete state space.
 class StateSpace {
@@ -26,6 +22,8 @@ public:
   bool obstacleAt(State s) const { return _backingArray[s.x + _w * s.y]; }
   bool &obstacleAt(State s) { return _backingArray[s.x + _w * s.y]; }
   void setBlocked(State s, bool blocked = true) { obstacleAt(s) = blocked; }
+
+  void clearObstacles();
 
   int width() const { return _w; }
   int height() const { return _h; }

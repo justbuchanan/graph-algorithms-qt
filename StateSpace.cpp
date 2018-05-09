@@ -3,13 +3,7 @@
 #include <cstring>
 #include <memory>
 
-StateSpace::StateSpace(int w, int h) : _w(w), _h(h) {
-  // TODO: more c++
-  _backingArray = (bool *)malloc(sizeof(bool) * w * h);
-  memset(_backingArray, '\0', w * h * sizeof(bool));
-}
-
-StateSpace::~StateSpace() { free(_backingArray); }
+/// State
 
 std::ostream &operator<<(std::ostream &os, const State &s) {
   return os << "State{" << s.x << ", " << s.y << "}";
@@ -18,6 +12,26 @@ std::ostream &operator<<(std::ostream &os, const State &s) {
 bool operator<(const State &a, const State &b) {
   return a.x < b.x || (a.x == b.x && a.y < b.y);
 }
+
+bool operator==(const State &a, const State &b) {
+  return a.x == b.x && a.y == b.y;
+}
+
+bool operator!=(const State &a, const State &b) { return !(a == b); }
+
+/// StateSpace
+
+StateSpace::StateSpace(int w, int h) : _w(w), _h(h) {
+  // TODO: more c++
+  _backingArray = (bool *)malloc(sizeof(bool) * w * h);
+  clearObstacles();
+}
+
+void StateSpace::clearObstacles() {
+  memset(_backingArray, 0, _w * _h * sizeof(bool));
+}
+
+StateSpace::~StateSpace() { free(_backingArray); }
 
 std::vector<State> StateSpace::neighborsOf(State s) const {
   std::vector<State> ns;

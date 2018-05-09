@@ -17,6 +17,8 @@ public Q_SLOTS:
   void useAstar();
   void useRandom();
 
+  void clearObstacles();
+
 public:
   GraphWidget();
 
