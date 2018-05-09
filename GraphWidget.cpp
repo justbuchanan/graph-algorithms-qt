@@ -121,11 +121,6 @@ void GraphWidget::restartRun() {
   _solutionPath.clear();
   _solved = false;
   setIterations(0);
-  restartTimer();
-}
-
-void GraphWidget::restartTimer() {
-  // Note: the parameter can be adjusted to change the speed of the animation.
   _stepTimer.start(10);
 }
 
@@ -162,15 +157,24 @@ void GraphWidget::incItr() {
   Q_EMIT stepped();
 }
 
+// Triggered periodically by @_stepTimer
 void GraphWidget::step() {
+  // Don't run while the user is adjusting the setup
+  if (_draggingItem != DraggingNone) {
+    return;
+  }
+
+  if (_solved) {
+    return;
+  }
+
   incItr();
+  _solver->step();
+
   if (_solver->done()) {
-    // Done
     _solutionPath = _solver->reconstructPath();
     _solved = true;
     _stepTimer.stop();
-  } else {
-    _solver->step();
   }
 
   update();
@@ -254,8 +258,6 @@ void GraphWidget::mousePressEvent(QMouseEvent *event) {
     _stateSpace->obstacleAt(state) = !_erasingObstacles;
     update();
   }
-
-  _stepTimer.stop();
 }
 
 void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -278,8 +280,6 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
     }
   }
 
-  _stepTimer.stop(); // stay paused
-
   if (_draggingItem != DraggingNone) {
     update();
   }
@@ -287,6 +287,4 @@ void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
 
 void GraphWidget::mouseReleaseEvent(QMouseEvent *event) {
   _draggingItem = DraggingNone;
-
-  restartTimer();
 }
