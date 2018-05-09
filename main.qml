@@ -22,7 +22,7 @@ ApplicationWindow {
             Layout.alignment: Qt.AlignTop
 
             Button {
-                text: "Dijkstra"
+                text: "Dijkstra / BFS"
                 onClicked: graphWidget.useDijkstra()
             }
 
