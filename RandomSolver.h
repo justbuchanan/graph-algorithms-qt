@@ -12,7 +12,6 @@ public:
     return {};
   }
   bool hasExplored(State s) const override;
-  void reset() override;
 
 private:
   std::vector<State> _explored;

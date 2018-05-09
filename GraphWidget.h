@@ -24,7 +24,7 @@ public:
 
   Q_PROPERTY(int iterations READ iterations WRITE setIterations NOTIFY stepped)
   int iterations() const { return _iterations; }
-  void setIterations(int i) { _iterations = i; }
+  void setIterations(int i);
   void incItr();
 
 Q_SIGNALS:
@@ -46,12 +46,10 @@ protected:
 
   State _stateForPos(QPointF qp);
 
-private:
-  template <class T>
-  std::unique_ptr<T> make_solver(State start, State goal) const {
-    return std::unique_ptr<T>(new T(_stateSpace.get(), start, goal));
-  }
+  void _useNamedSolver(std::string name);
+  void _useNamedSolver(std::string name, State start, State goal);
 
+private:
   // if you click down on an obstacle, you enter erase mode.
   // if you click down where there's no obstacle, you enter draw mode.
   bool _editingObstacles, _erasingObstacles;
@@ -69,4 +67,5 @@ private:
 
   std::vector<State> _solutionPath;
   bool _solved = false;
+  std::string _currentSolverName;
 };

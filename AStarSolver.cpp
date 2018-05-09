@@ -5,7 +5,9 @@
 
 AStarSolver::AStarSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
-  reset();
+  _openSet.insert(start);
+  _gScore[start] = 0;
+  _fScore[start] = _heuristicCostEstimate(start, goal);
 }
 
 float AStarSolver::fScore(State s) {
@@ -39,8 +41,8 @@ void AStarSolver::step() {
                                 if (std::abs(f1 - f2) < 0.0001) {
                                   // tie breaker: choose the node closest to the
                                   // goal
-                                  return _heuristicCostEstimate(s1, goal()) <
-                                         _heuristicCostEstimate(s2, goal());
+                                  return _heuristicCostEstimate(s1, goal) <
+                                         _heuristicCostEstimate(s2, goal);
                                 } else {
                                   return f1 < f2;
                                 }
@@ -49,12 +51,11 @@ void AStarSolver::step() {
   _openSet.erase(c);
   _closedSet.insert(c);
 
-  if (c == goal()) {
-    std::cout << "Done!" << std::endl;
+  if (c == goal) {
     return;
   }
 
-  for (auto neighbor : stateSpace()->neighborsOf(c)) {
+  for (auto neighbor : stateSpace->neighborsOf(c)) {
     if (_closedSet.find(neighbor) != _closedSet.end()) {
       continue; // this neighbor already evaluated
     }
@@ -62,7 +63,7 @@ void AStarSolver::step() {
     // add to open set if not in already
     _openSet.insert(neighbor);
 
-    float tentative_gScore = gScore(c) + stateSpace()->distance(c, neighbor);
+    float tentative_gScore = gScore(c) + stateSpace->distance(c, neighbor);
 
     if (tentative_gScore >= gScore(neighbor)) {
       // this is not a better path
@@ -72,14 +73,14 @@ void AStarSolver::step() {
     _cameFrom[neighbor] = c;
     _gScore[neighbor] = tentative_gScore;
     _fScore[neighbor] =
-        tentative_gScore + _heuristicCostEstimate(neighbor, goal());
+        tentative_gScore + _heuristicCostEstimate(neighbor, goal);
   }
 }
 
 std::vector<State> AStarSolver::reconstructPath() {
   std::vector<State> path;
 
-  State current = goal();
+  State current = goal;
 
   path.push_back(current);
 
@@ -108,16 +109,4 @@ float AStarSolver::_heuristicCostEstimate(State a, State b) {
 
 bool AStarSolver::hasExplored(State s) const {
   return std::find(_closedSet.begin(), _closedSet.end(), s) != _closedSet.end();
-}
-
-void AStarSolver::reset() {
-  _openSet.clear();
-  _closedSet.clear();
-  _cameFrom.clear();
-  _fScore.clear();
-  _gScore.clear();
-
-  _openSet.insert(start());
-  _gScore[start()] = 0;
-  _fScore[start()] = _heuristicCostEstimate(start(), goal());
 }

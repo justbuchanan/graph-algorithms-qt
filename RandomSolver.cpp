@@ -5,13 +5,13 @@
 
 RandomSolver::RandomSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
-  reset();
+  _explored.push_back(start);
 }
 
 void RandomSolver::step() {
   const State s = _explored[rand() % _explored.size()];
 
-  auto neighbors = stateSpace()->neighborsOf(s);
+  auto neighbors = stateSpace->neighborsOf(s);
   State neighbor = neighbors[rand() % neighbors.size()];
 
   if (!hasExplored(neighbor)) {
@@ -21,9 +21,4 @@ void RandomSolver::step() {
 
 bool RandomSolver::hasExplored(State s) const {
   return std::find(_explored.begin(), _explored.end(), s) != _explored.end();
-}
-
-void RandomSolver::reset() {
-  _explored.clear();
-  _explored.push_back(start());
 }
