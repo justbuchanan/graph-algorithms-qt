@@ -36,7 +36,7 @@ cc_library(
         "-lQt5Quick",
     ],
     deps = [
-        "@qt//:qt_gui",
+        ":qt_gui",
     ],
 )
 
