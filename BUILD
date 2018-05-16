@@ -1,4 +1,4 @@
-load("//:qt.bzl", "qt_cc_library", "qt_resource")
+load("@//bazel_rules_qt:qt.bzl", "qt_cc_library", "qt_resource")
 
 cc_binary(
     name = "main",
