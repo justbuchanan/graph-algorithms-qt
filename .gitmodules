@@ -1,3 +1,0 @@
-[submodule "bazel_rules_qt"]
-	path = bazel_rules_qt
-	url = https://github.com/justbuchanan/bazel_rules_qt
