@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 AStarSolver::AStarSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {

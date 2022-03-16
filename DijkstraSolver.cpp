@@ -1,6 +1,7 @@
 #include "DijkstraSolver.h"
 
 #include <algorithm>
+#include <limits>
 
 DijkstraSolver::DijkstraSolver(const StateSpace *ss, State start, State goal)
     : Solver(ss, start, goal) {
